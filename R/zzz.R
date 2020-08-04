@@ -11,6 +11,7 @@ register_mlr3 = function(libname, pkgname) {
   x = utils::getFromNamespace("mlr_learners", ns = "mlr3")
 
   x$add("surv.coxtime", LearnerSurvCoxtime)
+  x$add("surv.deepsurv", LearnerSurvDeepsurv)
 }
 
 pycox = torch = torchtuples = NULL

@@ -1,25 +1,26 @@
-#' @title Survival Cox-Time Learner
+#' @title Survival DeepSurv Learner
 #'
-#' @name mlr_learners_surv.coxtime
+#' @name mlr_learners_surv.deepsurv
 #'
 #' @description
-#' A [mlr3proba::LearnerSurv] implementing Cox-Time from Python package
+#' A [mlr3proba::LearnerSurv] implementing Deep-Surv from Python package
 #' \href{pycox}{https://pypi.org/project/pycox/}.
 #'
-#' Calls `pycox.models::CoxTime`.
+#' Calls `pycox.models.CoxPH`.
 #'
-#' @templateVar id surv.coxtime
+#' @templateVar id surv.deepsurv
 #' @template section_dictionary_learner
 #'
 #' @references
-#' Kvamme, H., Borgan, Ø., & Scheel, I. (2019).
-#' Time-to-event prediction with neural networks and Cox regression.
-#' Journal of Machine Learning Research, 20(129), 1–30.
+#' Katzman, J. L., Shaham, U., Cloninger, A., Bates, J., Jiang, T., & Kluger, Y. (2018).
+#' DeepSurv: personalized treatment recommender system using a Cox proportional hazards deep neural
+#' network.
+#' BMC Medical Research Methodology, 18(1), 24. https://doi.org/10.1186/s12874-018-0482-1
 #'
 #' @template seealso_learner
 #' @template example
 #' @export
-LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
+LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
   inherit = mlr3proba::LearnerSurv,
 
   public = list(
@@ -29,10 +30,6 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
       ps = ParamSet$new(
         params = list(
           ParamDbl$new("frac", default = 0, lower = 0, upper = 1, tags = c("train", "prep")),
-          ParamLgl$new("standardize_time", default = FALSE, tags = c("train", "prep")),
-          ParamLgl$new("log_duration", default = FALSE, tags = c("train", "prep")),
-          ParamLgl$new("with_mean", default = TRUE, tags = c("train", "prep")),
-          ParamLgl$new("with_std", default = TRUE, tags = c("train", "prep")),
           ParamUty$new("num_nodes", tags = c("train", "net")),
           ParamLgl$new("batch_norm", default = TRUE, tags = c("train", "net")),
           ParamDbl$new("dropout", default = "None", special_vals = list("None"),
@@ -75,10 +72,6 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
           ParamInt$new("patience", default = 10, tags = c("train", "early"))
         )
       )
-
-      ps$add_dep("log_duration", "standardize_time", CondEqual$new(TRUE))
-      ps$add_dep("with_mean", "standardize_time", CondEqual$new(TRUE))
-      ps$add_dep("with_std", "standardize_time", CondEqual$new(TRUE))
 
       ps$add_dep("rho", "optimizer", CondEqual$new("adadelta"))
       ps$add_dep("eps", "optimizer", CondAnyOf$new(setdiff(optimizers, c("asgd", "rprop", "sgd"))))
@@ -128,21 +121,22 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
       # Set-up network architecture
       pars = self$param_set$get_values(tags = "net")
       net = mlr3misc::invoke(
-        pycox$models$cox_time$MLPVanillaCoxTime,
+        torchtuples$practical$MLPVanilla,
         in_features = x_train$shape[1],
         num_nodes = reticulate::r_to_py(as.integer(pars$num_nodes)),
+        out_features = 1L,
         activation = mlr3misc::invoke(get_activation,
                                       construct = FALSE,
                                       .args = self$param_set$get_values(tags = "act")),
+        output_bias = FALSE,
         .args = pars[names(pars) %nin% "num_nodes"]
       )
 
       # Get optimizer and set-up model
       pars = self$param_set$get_values(tags = "mod")
       model = mlr3misc::invoke(
-        pycox$models$CoxTime,
+        pycox$models$CoxPH,
         net = net,
-        labtrans = data$labtrans,
         optimizer = mlr3misc::invoke(get_optim,
                                      net = net,
                                      .args = self$param_set$get_values(tags = "opt")),
@@ -186,7 +180,7 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
         callbacks = callbacks,
         val_data = data$val,
         .args = pars
-        )
+      )
     },
 
     .predict = function(task) {

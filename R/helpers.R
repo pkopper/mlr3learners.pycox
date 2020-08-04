@@ -65,36 +65,71 @@ activations = c("celu", "elu", "gelu", "glu", "hardshrink", "hardsigmoid", "hard
                 "softmax", "softmax2d", "softmin", "softplus", "softshrink", "softsign",
                 "tanh", "tanhshrink", "threshold")
 
-get_activation = function(activation = "relu") {
+get_activation = function(activation = "relu", construct = TRUE, alpha = 1, dim = NULL, lambd = 0.5,
+                          min_val = -1, max_val = 1, negative_slope = 0.01,
+                          num_parameters = 1L, init = 0.25, lower = 1/8, upper = 1/3,
+                          beta = 1, threshold = 20, value = 20) {
   act = torch$nn$modules$activation
-  switch(activation,
-         celu = act$CELU,
-         elu = act$ELU,
-         gelu = act$GELU,
-         glu = act$GLU,
-         hardshrink = act$Hardshrink,
-         hardsigmoid = act$Hardsigmoid,
-         hardswish = act$Hardswish,
-         hardtanh = act$Hardtanh,
-         relu6 = act$ReLU6,
-         leakyrelu = act$LeakyReLU,
-         logsigmoid = act$LogSigmoid,
-         logsoftmax = act$LogSoftmax,
-         prelu = act$PReLU,
-         rrelu = act$RReLU,
-         relu = act$ReLU,
-         selu = act$SELU,
-         sigmoid = act$Sigmoid,
-         softmax = act$Softmax,
-         softmax2d = act$Softmax2d,
-         softmin = act$Softmin,
-         softplus = act$Softplus(beta, threshold),
-         softshrink = act$Softshrink(lambd),
-         softsign = act$Softsign(),
-         tanh = act$Tanh(),
-         tanhshrink = act$Tanhshrink(),
-         threshold = act$Threshold(threshold, value)
-  )
+
+  if (construct) {
+    activation = switch(activation,
+                        celu = act$CELU(alpha),
+                        elu = act$ELU(alpha),
+                        gelu = act$GELU(),
+                        glu = act$GLU(as.integer(dim)),
+                        hardshrink = act$Hardshrink(lambd),
+                        hardsigmoid = act$Hardsigmoid(),
+                        hardswish = act$Hardswish(),
+                        hardtanh = act$Hardtanh(as.integer(min_val), as.integer(max_val)),
+                        relu6 = act$ReLU6(),
+                        leakyrelu = act$LeakyReLU(negative_slope),
+                        logsigmoid = act$LogSigmoid(),
+                        logsoftmax = act$LogSoftmax(as.integer(dim)),
+                        prelu = act$PReLU(num_parameters = as.integer(num_parameters), init = init),
+                        rrelu = act$RReLU(lower, upper),
+                        relu = act$ReLU(),
+                        selu = act$SELU(),
+                        sigmoid = act$Sigmoid(),
+                        softmax = act$Softmax(as.integer(dim)),
+                        softmax2d = act$Softmax2d(),
+                        softmin = act$Softmin(as.integer(dim)),
+                        softplus = act$Softplus(beta, threshold),
+                        softshrink = act$Softshrink(lambd),
+                        softsign = act$Softsign(),
+                        tanh = act$Tanh(),
+                        tanhshrink = act$Tanhshrink(),
+                        threshold = act$Threshold(threshold, value)
+    )
+  } else {
+    activation = switch(activation,
+                        celu = act$CELU,
+                        elu = act$ELU,
+                        gelu = act$GELU,
+                        glu = act$GLU,
+                        hardshrink = act$Hardshrink,
+                        hardsigmoid = act$Hardsigmoid,
+                        hardswish = act$Hardswish,
+                        hardtanh = act$Hardtanh,
+                        relu6 = act$ReLU6,
+                        leakyrelu = act$LeakyReLU,
+                        logsigmoid = act$LogSigmoid,
+                        logsoftmax = act$LogSoftmax,
+                        prelu = act$PReLU,
+                        rrelu = act$RReLU,
+                        relu = act$ReLU,
+                        selu = act$SELU,
+                        sigmoid = act$Sigmoid,
+                        softmax = act$Softmax,
+                        softmax2d = act$Softmax2d,
+                        softmin = act$Softmin,
+                        softplus = act$Softplus(beta, threshold),
+                        softshrink = act$Softshrink(lambd),
+                        softsign = act$Softsign(),
+                        tanh = act$Tanh(),
+                        tanhshrink = act$Tanhshrink(),
+                        threshold = act$Threshold(threshold, value)
+    )
+  }
 }
 
 optimizers = c("adadelta", "adagrad", "adam", "adamax", "adamw", "asgd",
@@ -122,5 +157,25 @@ get_optim = function(optimizer = "adam", net, rho = 0.9, eps = 1e-8, lr = 1,
     rprop = opt$Rprop(params, learning_rate, etas, step_sizes),
     sgd = opt$SGD(params, learning_rate, momentum, weight_decay, dampening, nesterov),
     sparse_adam = opt$SparseAdam(params, learning_rate, betas, eps)
+  )
+}
+
+initializers = c("uniform", "normal", "constant", "xavier_uniform", "xavier_normal",
+                 "kaiming_uniform", "kaiming_normal", "orthogonal")
+
+get_init = function(init = "uniform", a = 0, b = 1, mean = 0, std = 1, gain = 1,
+                    mode = c("fan_in", "fan_out"), non_linearity = c("leaky_relu", "relu")) {
+
+  switch(init,
+    uniform = paste0("torch.nn.init.uniform_(m.weight, ", a, ", ", b, ")"),
+    normal = paste0("torch.nn.init.normal_(m.weight, ", mean, ", ", std, ")"),
+    constant = paste0("torch.nn.init.constant_(m.weight, ", val, ")"),
+    xavier_uniform = paste0("torch.nn.init.xavier_uniform_(m.weight, ", gain, ")"),
+    xavier_normal = paste0("torch.nn.init.xavier_normal_(m.weight, ", gain, ")"),
+    kaiming_uniform = paste0("torch.nn.init.kaiming_uniform_(m.weight, ", a, ", '",
+                             match.arg(mode), "', '", match.arg(non_linearity), "')"),
+    kaiming_normal = paste0("torch.nn.init.kaiming_normal_(m.weight, ", a, ", '",
+                            match.arg(mode), "', '", match.arg(non_linearity), "')"),
+    orthogonal = paste0("torch.nn.init.orthogonal_(m.weight, ", gain, ")")
   )
 }
