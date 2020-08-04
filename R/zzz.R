@@ -3,22 +3,24 @@
 #' @import mlr3misc
 #' @importFrom R6 R6Class
 #' @importFrom mlr3 mlr_learners LearnerClassif LearnerRegr
+#' @importFrom mlr3proba TaskSurv LearnerSurv PredictionSurv
 "_PACKAGE"
 
 # nocov start
 register_mlr3 = function(libname, pkgname) {
-  # get mlr_learners dictionary from the mlr3 namespace
   x = utils::getFromNamespace("mlr_learners", ns = "mlr3")
 
-  # add the learner to the dictionary
-  x$add("<type>.<algorithm>", <algorithm>)
-  # Example: x$add("regr.gamboost", LearnerRegrGAMBoost)
+  x$add("surv.coxtime", LearnerSurvCoxtime)
 }
 
+pycox = torch = torchtuples = NULL
 .onLoad = function(libname, pkgname) { # nolint
   register_mlr3()
   setHook(packageEvent("mlr3", "onLoad"), function(...) register_mlr3(),
     action = "append")
+  pycox <<- reticulate::import("pycox", delay_load = TRUE)
+  torch <<- reticulate::import("torch", delay_load = TRUE)
+  torchtuples <<- reticulate::import("torchtuples", delay_load = TRUE)
 }
 
 .onUnload = function(libpath) { # nolint
