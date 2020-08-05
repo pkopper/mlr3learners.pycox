@@ -24,7 +24,7 @@ lrn("surv.deephit")
 }
 
 \examples{
-if (requireNamespace("reticulate")) {
+if (requireNamespace("mlr3learners.pycox")) {
   learner = mlr3::lrn("surv.deephit")
   print(learner)
 

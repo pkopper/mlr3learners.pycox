@@ -45,13 +45,13 @@ prepare_train_data = function(task, frac = 0, standardize_time = FALSE, log_dura
 
   y_train = reticulate::r_to_py(y_train)
 
-  x_train = reticulate::r_to_py(x_train)$values$astype('float32')
+  x_train = reticulate::r_to_py(x_train)$values$astype("float32")
   y_train = reticulate::tuple(y_train[task$target_names[1L]]$values$astype(conv),
                               y_train[task$target_names[2L]]$values$astype(conv))
 
 
   if (frac) {
-    x_val = reticulate::r_to_py(x_val)$values$astype('float32')
+    x_val = reticulate::r_to_py(x_val)$values$astype("float32")
     y_val = reticulate::r_to_py(y_val)
     y_val = reticulate::tuple(y_val[task$target_names[1L]]$values$astype(conv),
                               y_val[task$target_names[2L]]$values$astype(conv))
@@ -105,14 +105,14 @@ prepare_train_data = function(task, frac = 0, standardize_time = FALSE, log_dura
       )
     } else if (model == "LH") {
       y_train = reticulate::tuple(
-        y_train[0]$astype('int64'),
-        y_train[1]$astype('float32')
+        y_train[0]$astype("int64"),
+        y_train[1]$astype("float32")
       )
     } else if (model == "PCH") {
       y_train = reticulate::tuple(
-        y_train[0]$astype('int64'),
-        y_train[1]$astype('float32'),
-        y_train[2]$astype('float32')
+        y_train[0]$astype("int64"),
+        y_train[1]$astype("float32"),
+        y_train[2]$astype("float32")
       )
     }
 
@@ -129,14 +129,14 @@ prepare_train_data = function(task, frac = 0, standardize_time = FALSE, log_dura
         )
       } else if (model == "LH") {
         y_val = reticulate::tuple(
-          y_val[0]$astype('int64'),
-          y_val[1]$astype('float32')
+          y_val[0]$astype("int64"),
+          y_val[1]$astype("float32")
         )
       } else if (model == "PCH") {
         y_val = reticulate::tuple(
-          y_val[0]$astype('int64'),
-          y_val[1]$astype('float32'),
-          y_val[2]$astype('float32')
+          y_val[0]$astype("int64"),
+          y_val[1]$astype("float32"),
+          y_val[2]$astype("float32")
         )
       }
     }
@@ -206,7 +206,7 @@ activations = c("celu", "elu", "gelu", "glu", "hardshrink", "hardsigmoid", "hard
 #' @export
 get_activation = function(activation = "relu", construct = TRUE, alpha = 1, dim = NULL, lambd = 0.5,
                           min_val = -1, max_val = 1, negative_slope = 0.01,
-                          num_parameters = 1L, init = 0.25, lower = 1/8, upper = 1/3,
+                          num_parameters = 1L, init = 0.25, lower = 1 / 8, upper = 1 / 3,
                           beta = 1, threshold = 20, value = 20) {
   act = torch$nn$modules$activation
 
@@ -340,7 +340,8 @@ initializers = c("uniform", "normal", "constant", "xavier_uniform", "xavier_norm
 #' @description Helper function to return a character string with a populated pytorch weight
 #' initializer method from `torch.nn.init`. Used in [build_pytorch_net] to define a weighting
 #' function.
-#' @param init `(character(1))`\cr Initialization method, see details for list of implemented methods.
+#' @param init `(character(1))`\cr Initialization method, see details for list of implemented
+#' methods.
 #' @param a `(numeric(1))`\cr Passed to `uniform`, `kaiming_uniform`, and `kaiming_normal`
 #' @param b `(numeric(1))`\cr Passed to `uniform`
 #' @param mean,std `(numeric(1))`\cr Passed to `normal`

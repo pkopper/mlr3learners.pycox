@@ -16,7 +16,8 @@ get_init(
 )
 }
 \arguments{
-\item{init}{\code{(character(1))}\cr Initialization method, see details for list of implemented methods.}
+\item{init}{\code{(character(1))}\cr Initialization method, see details for list of implemented
+methods.}
 
 \item{a}{\code{(numeric(1))}\cr Passed to \code{uniform}, \code{kaiming_uniform}, and \code{kaiming_normal}}
 

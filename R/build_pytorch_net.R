@@ -9,8 +9,8 @@
 #' @param n_out `(integer(1))`\cr Number of targets.
 #' @param nodes `(numeric())`\cr Hidden nodes in network, each element in vector represents number
 #' of hidden nodes in respective layer.
-#' @param activation `(character(1)|list())`\cr Activation function, can either be a single character
-#' and the same function is used in all layers, or a list of length `length(nodes)`. See
+#' @param activation `(character(1)|list())`\cr Activation function, can either be a single
+#' character and the same function is used in all layers, or a list of length `length(nodes)`. See
 #' [get_activation] for options.
 #' @param act_pars `(list())`\cr Passed to [get_activation].
 #' @param dropout `(numeric())`\cr Optional dropout layer, if `NULL` then no dropout layer added

@@ -119,7 +119,7 @@ LearnerSurvLogisticHazard = R6::R6Class("LearnerSurvLogisticHazard",
         predict_types = c("crank", "distr"),
         param_set = ps,
         man = "mlr3learners.pycox::surv.loghaz",
-        packages = "reticulate"
+        packages = "mlr3learners.pycox"
       )
     }
   ),
@@ -216,7 +216,7 @@ LearnerSurvLogisticHazard = R6::R6Class("LearnerSurvLogisticHazard",
 
       # get test data
       x_test = task$data(cols = task$feature_names)
-      x_test = reticulate::r_to_py(x_test)$values$astype('float32')
+      x_test = reticulate::r_to_py(x_test)$values$astype("float32")
 
       # predict survival probabilities
       if (!is.null(self$param_set$values$interpolate) && self$param_set$values$interpolate) {
@@ -251,7 +251,7 @@ LearnerSurvLogisticHazard = R6::R6Class("LearnerSurvLogisticHazard",
         x[[i]]$cdf = 1 - surv[, i]
         x[[i]]$cdf[x[[i]]$cdf > 1] = 1
         x[[i]]$cdf[x[[i]]$cdf < 0] = 0
-        x[[i]]$cdf = round(x[[i]]$cdf, 6)
+        x[[i]]$cdf = round(x[[i]]$cdf, 5)
       }
 
       distr = distr6::VectorDistribution$new(

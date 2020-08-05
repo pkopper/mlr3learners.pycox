@@ -26,8 +26,8 @@ build_pytorch_net(
 \item{nodes}{\code{(numeric())}\cr Hidden nodes in network, each element in vector represents number
 of hidden nodes in respective layer.}
 
-\item{activation}{\code{(character(1)|list())}\cr Activation function, can either be a single character
-and the same function is used in all layers, or a list of length \code{length(nodes)}. See
+\item{activation}{\code{(character(1)|list())}\cr Activation function, can either be a single
+character and the same function is used in all layers, or a list of length \code{length(nodes)}. See
 \link{get_activation} for options.}
 
 \item{act_pars}{\code{(list())}\cr Passed to \link{get_activation}.}

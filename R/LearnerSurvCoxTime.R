@@ -107,7 +107,7 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
         predict_types = c("crank", "distr"),
         param_set = ps,
         man = "mlr3learners.pycox::surv.coxtime",
-        packages = "reticulate"
+        packages = "mlr3learners.pycox"
       )
     }
   ),
@@ -198,7 +198,7 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
 
       # get test data
       x_test = task$data(cols = task$feature_names)
-      x_test = reticulate::r_to_py(x_test)$values$astype('float32')
+      x_test = reticulate::r_to_py(x_test)$values$astype("float32")
 
       # predict survival probabilities
       pars = self$param_set$get_values(tags = "predict")
