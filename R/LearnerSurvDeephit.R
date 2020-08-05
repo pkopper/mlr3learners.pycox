@@ -8,6 +8,12 @@
 #'
 #' Calls `pycox.models.DeepHitSingle`.
 #'
+#' @details
+#' Custom nets can be used in this learner either using the [build_pytorch_net] utility function
+#' or using `torch` via \CRANpkg{reticulate}. However note that the number of output channels
+#' depends on the number of discretised time-points, i.e. the parameters `cuts` or `cutpoints`.
+#'
+#'
 #' @templateVar id surv.deephit
 #' @template section_dictionary_learner
 #'
@@ -128,6 +134,7 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
         prepare_train_data,
         task = task,
         discretise = TRUE,
+        model = "DeepHit",
         .args = pars
       )
       x_train = data$x_train
@@ -243,6 +250,8 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
       for (i in seq_len(task$nrow)) {
         x[[i]]$cdf = 1 - surv[, i]
         x[[i]]$cdf[x[[i]]$cdf > 1] = 1
+        x[[i]]$cdf[x[[i]]$cdf < 0] = 0
+        x[[i]]$cdf = round(x[[i]]$cdf, 6)
       }
 
       distr = distr6::VectorDistribution$new(

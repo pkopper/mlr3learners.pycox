@@ -3,6 +3,8 @@
 export(LearnerSurvCoxtime)
 export(LearnerSurvDeephit)
 export(LearnerSurvDeepsurv)
+export(LearnerSurvLogisticHazard)
+export(LearnerSurvPCHazard)
 export(install_pycox)
 export(install_torch)
 import(data.table)
