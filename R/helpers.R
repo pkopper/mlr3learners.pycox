@@ -1,6 +1,6 @@
 prepare_train_data = function(task, frac = 0, standardize_time = FALSE, log_duration = FALSE,
                               with_mean = TRUE, with_std = TRUE, discretise = FALSE, cuts = 10,
-                              cutpoints = NULL, scheme = "equidistant", cut_min = 0) {
+                              cutpoints = NULL, scheme = "equidistant", cut_min = 0, model) {
 
   x_train = task$data(cols = task$feature_names)
   y_train = task$data(cols = task$target_names)
@@ -43,29 +43,74 @@ prepare_train_data = function(task, frac = 0, standardize_time = FALSE, log_dura
       if (!is.null(cutpoints)) {
         cuts = cutpoints
       }
-      labtrans = mlr3misc::invoke(
-        pycox$models$DeepHitSingle$label_transform,
-        cuts = as.integer(cuts),
-        scheme = scheme,
-        min_ = as.integer(cut_min)
-      )
+      if (model == "DeepHit") {
+        labtrans = mlr3misc::invoke(
+          pycox$models$DeepHitSingle$label_transform,
+          cuts = as.integer(cuts),
+          scheme = scheme,
+          min_ = as.integer(cut_min)
+        )
+      } else if (model == "LH") {
+        labtrans = mlr3misc::invoke(
+          pycox$models$LogisticHazard$label_transform,
+          cuts = as.integer(cuts),
+          scheme = scheme,
+          min_ = as.integer(cut_min)
+        )
+      } else if (model == "PCH") {
+        labtrans = mlr3misc::invoke(
+          pycox$models$PCHazard$label_transform,
+          cuts = as.integer(cuts),
+          scheme = scheme,
+          min_ = as.integer(cut_min)
+        )
+      }
+
     }
 
     y_train = reticulate::r_to_py(labtrans$fit_transform(y_train[0], y_train[1]))
-    y_train = reticulate::tuple(
-      y_train[0]$astype(conv),
-      y_train[1]$astype(conv)
-    )
+
+    if (model == "DeepHit") {
+      y_train = reticulate::tuple(
+        y_train[0]$astype(conv),
+        y_train[1]$astype(conv)
+      )
+    } else if (model == "LH") {
+      y_train = reticulate::tuple(
+        y_train[0]$astype('int64'),
+        y_train[1]$astype('float32')
+      )
+    } else if (model == "PCH") {
+      y_train = reticulate::tuple(
+        y_train[0]$astype('int64'),
+        y_train[1]$astype('float32'),
+        y_train[2]$astype('float32')
+      )
+    }
 
     ret$y_train = y_train
     ret$labtrans = labtrans
 
     if (frac) {
-      y_val = reticulate::r_to_py(labtrans$fit_transform(y_val[0], y_val[1]))
-      y_val = reticulate::tuple(
-        y_val[0]$astype(conv),
-        y_val[1]$astype(conv)
-      )
+      y_val = reticulate::r_to_py(labtrans$transform(y_val[0], y_val[1]))
+
+      if (model == "DeepHit") {
+        y_val = reticulate::tuple(
+          y_val[0]$astype(conv),
+          y_val[1]$astype(conv)
+        )
+      } else if (model == "LH") {
+        y_val = reticulate::tuple(
+          y_val[0]$astype('int64'),
+          y_val[1]$astype('float32')
+        )
+      } else if (model == "PCH") {
+        y_val = reticulate::tuple(
+          y_val[0]$astype('int64'),
+          y_val[1]$astype('float32'),
+          y_val[2]$astype('float32')
+        )
+      }
     }
   }
 

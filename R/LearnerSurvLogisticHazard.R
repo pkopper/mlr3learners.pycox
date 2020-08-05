@@ -1,25 +1,31 @@
-#' @title Survival Cox-Time Learner
+#' @title Survival LogisticHazard Learner
 #'
-#' @name mlr_learners_surv.coxtime
+#' @name mlr_learners_surv.loghaz
 #'
 #' @description
-#' A [mlr3proba::LearnerSurv] implementing Cox-Time from Python package
-#' \href{pycox}{https://pypi.org/project/pycox/}.
+#' A [mlr3proba::LearnerSurv] implementing LogisticHazard from Python package
+#' \href{pycox}{https://pypi.org/project/pycox/}. Also known as nnet-survival.
 #'
-#' Calls `pycox.models.CoxTime`.
+#' Calls `pycox.models.LogisticHazard`.
 #'
-#' @templateVar id surv.coxtime
+#' @details
+#' Custom nets can be used in this learner either using the [build_pytorch_net] utility function
+#' or using `torch` via \CRANpkg{reticulate}. However note that the number of output channels
+#' depends on the number of discretised time-points, i.e. the parameters `cuts` or `cutpoints`.
+#'
+#'
+#' @templateVar id surv.loghaz
 #' @template section_dictionary_learner
 #'
 #' @references
-#' Kvamme, H., Borgan, Ø., & Scheel, I. (2019).
-#' Time-to-event prediction with neural networks and Cox regression.
-#' Journal of Machine Learning Research, 20(129), 1–30.
+#' Gensheimer, M. F., & Narasimhan, B. (2018).
+#' A Simple Discrete-Time Survival Model for Neural Networks, 1–17.
+#' https://doi.org/arXiv:1805.00917v3
 #'
 #' @template seealso_learner
 #' @template example
 #' @export
-LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
+LearnerSurvLogisticHazard = R6::R6Class("LearnerSurvLogisticHazard",
   inherit = mlr3proba::LearnerSurv,
 
   public = list(
@@ -29,11 +35,13 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
       ps = ParamSet$new(
         params = list(
           ParamDbl$new("frac", default = 0, lower = 0, upper = 1, tags = c("train", "prep")),
-          ParamLgl$new("standardize_time", default = FALSE, tags = c("train", "prep")),
-          ParamLgl$new("log_duration", default = FALSE, tags = c("train", "prep")),
-          ParamLgl$new("with_mean", default = TRUE, tags = c("train", "prep")),
-          ParamLgl$new("with_std", default = TRUE, tags = c("train", "prep")),
-          ParamUty$new("num_nodes", tags = c("train", "net", "required")),
+          ParamDbl$new("cuts", default = 10, lower = 1, tags = c("train", "prep")),
+          ParamUty$new("cutpoints", tags = c("train", "prep")),
+          ParamFct$new("scheme", default = "equidistant", levels = c("equidistant", "quantiles"),
+                       tags = c("train", "prep")),
+          ParamDbl$new("cut_min", default = 0, lower = 0, tags = c("train", "prep")),
+          ParamUty$new("custom_net", tags = c("train", "net")),
+          ParamUty$new("num_nodes", tags = c("train", "net")),
           ParamLgl$new("batch_norm", default = TRUE, tags = c("train", "net")),
           ParamDbl$new("dropout", default = "None", special_vals = list("None"),
                        lower = 0, upper = 1, tags = c("train", "net")),
@@ -41,8 +49,9 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
                        tags = c("train", "act")),
           ParamDbl$new("alpha", default = 1, lower = 0, tags = c("train", "opt")),
           ParamDbl$new("lambd", default = 0.5, lower = 0, tags = c("train", "opt")),
+          ParamDbl$new("mod_alpha", default = 0.2, lower = 0, upper = 1, tags = c("train", "mod")),
+          ParamDbl$new("sigma", default = 0.1, tags = c("train", "mod")),
           ParamUty$new("device", tags = c("train", "mod")),
-          ParamDbl$new("shrink", default = 0, lower = 0, tags = c("train", "mod")),
           ParamUty$new("loss", tags = c("train", "mod")),
           ParamFct$new("optimizer", default = "adam", levels = optimizers,
                        tags = c("train", "opt")),
@@ -72,13 +81,13 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
           ParamLgl$new("best_weights", default = FALSE, tags = c("train", "callbacks")),
           ParamLgl$new("early_stopping", default = FALSE, tags = c("train", "callbacks")),
           ParamDbl$new("min_delta", default = 0, tags = c("train", "early")),
-          ParamInt$new("patience", default = 10, tags = c("train", "early"))
+          ParamInt$new("patience", default = 10, tags = c("train", "early")),
+          ParamLgl$new("interpolate", default = FALSE, tags = "predict"),
+          ParamInt$new("sub", default = 10, lower = 1, tags = c("inter", "predict")),
+          ParamFct$new("interpolate_scheme", default = "const_pdf",
+                       levels = c("const_hazard", "const_pdf"), tags = c("inter", "predict"))
         )
       )
-
-      ps$add_dep("log_duration", "standardize_time", CondEqual$new(TRUE))
-      ps$add_dep("with_mean", "standardize_time", CondEqual$new(TRUE))
-      ps$add_dep("with_std", "standardize_time", CondEqual$new(TRUE))
 
       ps$add_dep("rho", "optimizer", CondEqual$new("adadelta"))
       ps$add_dep("eps", "optimizer", CondAnyOf$new(setdiff(optimizers, c("asgd", "rprop", "sgd"))))
@@ -101,12 +110,15 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
       ps$add_dep("min_delta", "early_stopping", CondEqual$new(TRUE))
       ps$add_dep("patience", "early_stopping", CondEqual$new(TRUE))
 
+      ps$add_dep("sub", "interpolate", CondEqual$new(TRUE))
+      ps$add_dep("interpolate_scheme", "interpolate", CondEqual$new(TRUE))
+
       super$initialize(
-        id = "surv.coxtime",
+        id = "surv.loghaz",
         feature_types = c("integer", "numeric"),
         predict_types = c("crank", "distr"),
         param_set = ps,
-        man = "mlr3learners.pycox::surv.coxtime"
+        man = "mlr3learners.pycox::surv.loghaz"
       )
     }
   ),
@@ -119,8 +131,9 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
       pars = self$param_set$get_values(tags = "prep")
       data = mlr3misc::invoke(
         prepare_train_data,
-        model = "CoxTime",
         task = task,
+        discretise = TRUE,
+        model = "LH",
         .args = pars
       )
       x_train = data$x_train
@@ -128,22 +141,30 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
 
       # Set-up network architecture
       pars = self$param_set$get_values(tags = "net")
-      net = mlr3misc::invoke(
-        pycox$models$cox_time$MLPVanillaCoxTime,
-        in_features = x_train$shape[1],
-        num_nodes = reticulate::r_to_py(as.integer(pars$num_nodes)),
-        activation = mlr3misc::invoke(get_activation,
-                                      construct = FALSE,
-                                      .args = self$param_set$get_values(tags = "act")),
-        .args = pars[names(pars) %nin% "num_nodes"]
-      )
+      if (!is.null(pars$custom_net)) {
+        net = pars$custom_net
+      } else {
+        net = mlr3misc::invoke(
+          torchtuples$practical$MLPVanilla,
+          in_features = x_train$shape[1],
+          num_nodes = reticulate::r_to_py(as.integer(pars$num_nodes)),
+          activation = mlr3misc::invoke(get_activation,
+                                        construct = FALSE,
+                                        .args = self$param_set$get_values(tags = "act")),
+          out_features = data$labtrans$out_features,
+          .args = pars[names(pars) %nin% "num_nodes"]
+        )
+      }
 
       # Get optimizer and set-up model
       pars = self$param_set$get_values(tags = "mod")
+      if (!is.null(pars$modalpha)) {
+        names(pars)[names(pars) == "modalpha"] = "alpha"
+      }
       model = mlr3misc::invoke(
-        pycox$models$CoxTime,
+        pycox$models$LogisticHazard,
         net = net,
-        labtrans = data$labtrans,
+        duration_index = data$labtrans$cuts,
         optimizer = mlr3misc::invoke(get_optim,
                                      net = net,
                                      .args = self$param_set$get_values(tags = "opt")),
@@ -192,25 +213,44 @@ LearnerSurvCoxtime = R6::R6Class("LearnerSurvCoxtime",
 
     .predict = function(task) {
 
-      # compute baselines
-      self$model$model$compute_baseline_hazards()
-
       # get test data
       x_test = task$data(cols = task$feature_names)
       x_test = reticulate::r_to_py(x_test)$values$astype('float32')
 
       # predict survival probabilities
-      pars = self$param_set$get_values(tags = "predict")
-      surv = mlr3misc::invoke(
-        self$model$model$predict_surv_df,
-        x_test,
-        .args = pars
-      )
+      if (!is.null(self$param_set$values$interpolate) && self$param_set$values$interpolate) {
+        pars_inter = self$param_set$get_values(tags = "inter")
+        if (!is.null(pars_inter$interpolate_scheme)) {
+          names(pars_inter)[names(pars_inter) == "interpolate_scheme"] = "scheme"
+        }
+        surv = mlr3misc::invoke(
+          self$model$model$interpolate,
+          sub = ifelse(is.null(pars_inter$sub), 10L, as.integer(pars_inter$sub)),
+          .args = pars_inter[names(pars_inter) %nin% c("sub")]
+        )
+        pars = self$param_set$get_values(tags = "predict")
+        pars = pars[names(pars) %nin% c(names(pars_inter), "interpolate")]
+        surv = mlr3misc::invoke(
+          surv$predict_surv_df,
+          x_test,
+          .args = pars
+        )
+      } else {
+        pars = self$param_set$get_values(tags = "predict")
+        surv = mlr3misc::invoke(
+          self$model$model$predict_surv_df,
+          x_test,
+          .args = pars
+        )
+      }
 
       # cast to distr6
       x = rep(list(list(x = round(as.numeric(rownames(surv)), 5), cdf = 0)), task$nrow)
       for (i in seq_len(task$nrow)) {
         x[[i]]$cdf = 1 - surv[, i]
+        x[[i]]$cdf[x[[i]]$cdf > 1] = 1
+        x[[i]]$cdf[x[[i]]$cdf < 0] = 0
+        x[[i]]$cdf = round(x[[i]]$cdf, 6)
       }
 
       distr = distr6::VectorDistribution$new(
