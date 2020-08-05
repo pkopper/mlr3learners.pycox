@@ -118,7 +118,8 @@ LearnerSurvLogisticHazard = R6::R6Class("LearnerSurvLogisticHazard",
         feature_types = c("integer", "numeric"),
         predict_types = c("crank", "distr"),
         param_set = ps,
-        man = "mlr3learners.pycox::surv.loghaz"
+        man = "mlr3learners.pycox::surv.loghaz",
+        packages = "reticulate"
       )
     }
   ),

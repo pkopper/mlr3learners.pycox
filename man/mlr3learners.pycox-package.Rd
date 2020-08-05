@@ -4,9 +4,9 @@
 \name{mlr3learners.pycox-package}
 \alias{mlr3learners.pycox}
 \alias{mlr3learners.pycox-package}
-\title{mlr3learners.pycox: Adds Learners from Python Package {pycox}.}
+\title{mlr3learners.pycox: Adds Learners from Python Package pycox for mlr3}
 \description{
-Adds learners from Python package {pycox}.
+Adds Learners from Python Package pycox for mlr3.
 }
 \author{
 \strong{Maintainer}: Raphael Sonabend \email{raphael.sonabend.15@ucl.ac.uk}

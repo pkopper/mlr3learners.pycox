@@ -112,7 +112,8 @@ LearnerSurvPCHazard = R6::R6Class("LearnerSurvPCHazard",
         feature_types = c("integer", "numeric"),
         predict_types = c("crank", "distr"),
         param_set = ps,
-        man = "mlr3learners.pycox::surv.pchazard"
+        man = "mlr3learners.pycox::surv.pchazard",
+        packages = "reticulate"
       )
     }
   ),

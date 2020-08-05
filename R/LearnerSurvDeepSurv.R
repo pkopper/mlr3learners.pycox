@@ -98,7 +98,8 @@ LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
         feature_types = c("integer", "numeric"),
         predict_types = c("crank", "distr"),
         param_set = ps,
-        man = "mlr3learners.pycox::surv.deepsurv"
+        man = "mlr3learners.pycox::surv.deepsurv",
+        packages = "reticulate"
       )
     }
   ),

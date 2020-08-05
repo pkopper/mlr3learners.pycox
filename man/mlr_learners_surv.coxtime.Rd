@@ -19,7 +19,7 @@ lrn("surv.coxtime")
 }
 
 \examples{
-if (requireNamespace("")) {
+if (requireNamespace("reticulate")) {
   learner = mlr3::lrn("surv.coxtime")
   print(learner)
 

@@ -119,7 +119,8 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
         feature_types = c("integer", "numeric"),
         predict_types = c("crank", "distr"),
         param_set = ps,
-        man = "mlr3learners.pycox::surv.deephit"
+        man = "mlr3learners.pycox::surv.deephit",
+        packages = "reticulate"
       )
     }
   ),

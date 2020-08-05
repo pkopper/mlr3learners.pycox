@@ -24,7 +24,7 @@ lrn("surv.deephit")
 }
 
 \examples{
-if (requireNamespace("")) {
+if (requireNamespace("reticulate")) {
   learner = mlr3::lrn("surv.deephit")
   print(learner)
 

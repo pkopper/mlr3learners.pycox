@@ -7,7 +7,7 @@
 install_torch(method = "auto", conda = "auto", pip = FALSE)
 }
 \arguments{
-\item{method, conda}{See \link[reticulate:py_install]{reticulate::py_install}}
+\item{method, conda, pip}{See \link[reticulate:py_install]{reticulate::py_install}}
 }
 \description{
 Installs the python 'torch' package via reticulate.

@@ -24,7 +24,7 @@ lrn("surv.loghaz")
 }
 
 \examples{
-if (requireNamespace("")) {
+if (requireNamespace("reticulate")) {
   learner = mlr3::lrn("surv.loghaz")
   print(learner)
 
