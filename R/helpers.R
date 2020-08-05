@@ -1,8 +1,11 @@
 prepare_train_data = function(task, frac = 0, standardize_time = FALSE, log_duration = FALSE,
-                              with_mean = TRUE, with_std = TRUE) {
+                              with_mean = TRUE, with_std = TRUE, discretise = FALSE, cuts = 10,
+                              cutpoints = NULL, scheme = "equidistant", cut_min = 0) {
 
   x_train = task$data(cols = task$feature_names)
   y_train = task$data(cols = task$target_names)
+
+  conv = ifelse(discretise, "int64", "float32")
 
   if (frac) {
     val = sample(seq_len(task$nrow), task$nrow * frac)
@@ -15,29 +18,43 @@ prepare_train_data = function(task, frac = 0, standardize_time = FALSE, log_dura
   y_train = reticulate::r_to_py(y_train)
 
   x_train = reticulate::r_to_py(x_train)$values$astype('float32')
-  y_train = reticulate::tuple(y_train[task$target_names[1L]]$values$astype('float32'),
-                              y_train[task$target_names[2L]]$values$astype('float32'))
+  y_train = reticulate::tuple(y_train[task$target_names[1L]]$values$astype(conv),
+                              y_train[task$target_names[2L]]$values$astype(conv))
+
 
   if (frac) {
     x_val = reticulate::r_to_py(x_val)$values$astype('float32')
     y_val = reticulate::r_to_py(y_val)
-    y_val = reticulate::tuple(y_val[task$target_names[1L]]$values$astype('float32'),
-                              y_val[task$target_names[2L]]$values$astype('float32'))
+    y_val = reticulate::tuple(y_val[task$target_names[1L]]$values$astype(conv),
+                              y_val[task$target_names[2L]]$values$astype(conv))
   }
 
   ret = list(x_train = x_train, y_train = y_train)
 
-  if (standardize_time) {
-    labtrans = mlr3misc::invoke(
-      pycox$models$CoxTime$label_transform,
-      log_duration = log_duration,
-      with_mean = with_mean,
-      with_std = with_std
-    )
+  if (standardize_time || discretise) {
+    if (standardize_time) {
+      labtrans = mlr3misc::invoke(
+        pycox$models$CoxTime$label_transform,
+        log_duration = log_duration,
+        with_mean = with_mean,
+        with_std = with_std
+      )
+    } else {
+      if (!is.null(cutpoints)) {
+        cuts = cutpoints
+      }
+      labtrans = mlr3misc::invoke(
+        pycox$models$DeepHitSingle$label_transform,
+        cuts = as.integer(cuts),
+        scheme = scheme,
+        min_ = as.integer(cut_min)
+      )
+    }
+
     y_train = reticulate::r_to_py(labtrans$fit_transform(y_train[0], y_train[1]))
     y_train = reticulate::tuple(
-      y_train[0]$astype('float32'),
-      y_train[1]$astype('float32')
+      y_train[0]$astype(conv),
+      y_train[1]$astype(conv)
     )
 
     ret$y_train = y_train
@@ -46,8 +63,8 @@ prepare_train_data = function(task, frac = 0, standardize_time = FALSE, log_dura
     if (frac) {
       y_val = reticulate::r_to_py(labtrans$fit_transform(y_val[0], y_val[1]))
       y_val = reticulate::tuple(
-        y_val[0]$astype('float32'),
-        y_val[1]$astype('float32')
+        y_val[0]$astype(conv),
+        y_val[1]$astype(conv)
       )
     }
   }
