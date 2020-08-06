@@ -10,6 +10,7 @@ get_init(
   b = 1,
   mean = 0,
   std = 1,
+  val,
   gain = 1,
   mode = c("fan_in", "fan_out"),
   non_linearity = c("leaky_relu", "relu")
@@ -19,13 +20,15 @@ get_init(
 \item{init}{\code{(character(1))}\cr Initialization method, see details for list of implemented
 methods.}
 
-\item{a}{\code{(numeric(1))}\cr Passed to \code{uniform}, \code{kaiming_uniform}, and \code{kaiming_normal}}
+\item{a}{\code{(numeric(1))}\cr Passed to \code{uniform}, \code{kaiming_uniform}, and \code{kaiming_normal}.}
 
-\item{b}{\code{(numeric(1))}\cr Passed to \code{uniform}}
+\item{b}{\code{(numeric(1))}\cr Passed to \code{uniform}.}
 
-\item{mean, std}{\code{(numeric(1))}\cr Passed to \code{normal}}
+\item{mean, std}{\code{(numeric(1))}\cr Passed to \code{normal}.}
 
-\item{gain}{\code{(numeric(1))}\cr Passed to \code{xavier_uniform}, \code{xavier_normal}, and \code{orthogonal}}
+\item{val}{\code{(numeric(1))}\cr Passed to \code{constant}.}
+
+\item{gain}{\code{(numeric(1))}\cr Passed to \code{xavier_uniform}, \code{xavier_normal}, and \code{orthogonal}.}
 
 \item{mode}{\code{(character(1))}\cr Passed to \code{kaiming_uniform} and \code{kaiming_normal}, one of
 \code{fan_in} (default) and \code{fan_out}.}

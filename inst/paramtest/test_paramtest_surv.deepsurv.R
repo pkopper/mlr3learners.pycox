@@ -1,12 +1,16 @@
 library(mlr3learners.pycox)
 
-test_that("surv.coxtime prepare_train_data", {
-  learner = lrn("surv.coxtime")
+test_that("surv.deepsurv prepare_train_data", {
+  learner = lrn("surv.deepsurv")
   fun = prepare_train_data
   exclude = c(
     "task", # handled internally
     "model", # handled internally
-    "discretise", # unused
+    "discretise", # handled internally
+    "standardize_time", # handled internally
+    "log_duration", # unused
+    "with_mean", # unused
+    "with_std", # unused
     "cuts", # unused
     "cutpoints", # unused
     "scheme", # unused
@@ -18,8 +22,8 @@ test_that("surv.coxtime prepare_train_data", {
     paste0("- '", ParamTest$missing, "'", collapse = "\n")))
 })
 
-test_that("surv.coxtime get_activation", {
-  learner = lrn("surv.coxtime")
+test_that("surv.deepsurv get_activation", {
+  learner = lrn("surv.deepsurv")
   fun = get_activation
   exclude = c(
     "construct", # handled internally
@@ -41,8 +45,8 @@ test_that("surv.coxtime get_activation", {
                                        paste0("- '", ParamTest$missing, "'", collapse = "\n")))
 })
 
-test_that("surv.coxtime get_optim", {
-  learner = lrn("surv.coxtime")
+test_that("surv.deepsurv get_optim", {
+  learner = lrn("surv.deepsurv")
   fun = get_optim
   exclude = c(
     "net" # handled internally

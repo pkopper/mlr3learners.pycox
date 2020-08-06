@@ -1,16 +1,16 @@
 library(mlr3learners.pycox)
 
-test_that("surv.coxtime prepare_train_data", {
-  learner = lrn("surv.coxtime")
+test_that("surv.pchazard prepare_train_data", {
+  learner = lrn("surv.pchazard")
   fun = prepare_train_data
   exclude = c(
     "task", # handled internally
     "model", # handled internally
-    "discretise", # unused
-    "cuts", # unused
-    "cutpoints", # unused
-    "scheme", # unused
-    "cut_min" # unused
+    "standardize_time", # handled internally
+    "discretise", # handled internally
+    "log_duration", # handled internally
+    "with_mean", # handled internally
+    "with_std" # handled internally
   )
 
   ParamTest = run_paramtest(learner, fun, exclude)
@@ -18,11 +18,11 @@ test_that("surv.coxtime prepare_train_data", {
     paste0("- '", ParamTest$missing, "'", collapse = "\n")))
 })
 
-test_that("surv.coxtime get_activation", {
-  learner = lrn("surv.coxtime")
+test_that("surv.pchazard get_activation", {
+  learner = lrn("surv.pchazard")
   fun = get_activation
   exclude = c(
-    "construct", # handled internally
+    "construct", # unused
     "dim", # unused
     "min_val", # unused
     "max_val", # unused
@@ -41,8 +41,8 @@ test_that("surv.coxtime get_activation", {
                                        paste0("- '", ParamTest$missing, "'", collapse = "\n")))
 })
 
-test_that("surv.coxtime get_optim", {
-  learner = lrn("surv.coxtime")
+test_that("surv.pchazard get_optim", {
+  learner = lrn("surv.pchazard")
   fun = get_optim
   exclude = c(
     "net" # handled internally

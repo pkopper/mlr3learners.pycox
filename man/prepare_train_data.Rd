@@ -20,6 +20,8 @@ prepare_train_data(
 )
 }
 \arguments{
+\item{task}{\link[mlr3proba:TaskSurv]{mlr3proba::TaskSurv} \cr Survival task for extracting data.}
+
 \item{frac}{\code{(numeric(1))}\cr Fraction of data to use for validation dataset, default is \code{0}
 and therefore no separate validation dataset.}
 

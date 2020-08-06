@@ -1,6 +1,7 @@
 #' @title Prepare Data for Pycox Model Training
 #' @description Utility function to prepare data for training in a Pycox model.
 #' Generally used internally only.
+#' @param task [mlr3proba::TaskSurv] \cr Survival task for extracting data.
 #' @param frac `(numeric(1))`\cr Fraction of data to use for validation dataset, default is `0`
 #' and therefore no separate validation dataset.
 #' @param standardize_time `(logical(1))`\cr If `TRUE`, the time outcome be standardized. For use
@@ -342,10 +343,11 @@ initializers = c("uniform", "normal", "constant", "xavier_uniform", "xavier_norm
 #' function.
 #' @param init `(character(1))`\cr Initialization method, see details for list of implemented
 #' methods.
-#' @param a `(numeric(1))`\cr Passed to `uniform`, `kaiming_uniform`, and `kaiming_normal`
-#' @param b `(numeric(1))`\cr Passed to `uniform`
-#' @param mean,std `(numeric(1))`\cr Passed to `normal`
-#' @param gain `(numeric(1))`\cr Passed to `xavier_uniform`, `xavier_normal`, and `orthogonal`
+#' @param a `(numeric(1))`\cr Passed to `uniform`, `kaiming_uniform`, and `kaiming_normal`.
+#' @param b `(numeric(1))`\cr Passed to `uniform`.
+#' @param mean,std `(numeric(1))`\cr Passed to `normal`.
+#' @param val `(numeric(1))`\cr Passed to `constant`.
+#' @param gain `(numeric(1))`\cr Passed to `xavier_uniform`, `xavier_normal`, and `orthogonal`.
 #' @param mode `(character(1))`\cr Passed to `kaiming_uniform` and `kaiming_normal`, one of
 #' `fan_in` (default) and `fan_out`.
 #' @param non_linearity `(character(1))`\cr Passed to `kaiming_uniform` and `kaiming_normal`, one of
@@ -363,7 +365,7 @@ initializers = c("uniform", "normal", "constant", "xavier_uniform", "xavier_norm
 #' * `"orthogonal"` \cr `reticulate::py_help(torch$nn$init$orthogonal_)`
 #'
 #' @export
-get_init = function(init = "uniform", a = 0, b = 1, mean = 0, std = 1, gain = 1,
+get_init = function(init = "uniform", a = 0, b = 1, mean = 0, std = 1, val, gain = 1,
                     mode = c("fan_in", "fan_out"), non_linearity = c("leaky_relu", "relu")) {
 
   switch(init,
