@@ -33,29 +33,34 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     initialize = function() {
+
       ps = ParamSet$new(
         params = list(
           ParamDbl$new("frac", default = 0, lower = 0, upper = 1, tags = c("train", "prep")),
           ParamDbl$new("cuts", default = 10, lower = 1, tags = c("train", "prep")),
           ParamUty$new("cutpoints", tags = c("train", "prep")),
-          ParamFct$new("scheme", default = "equidistant", levels = c("equidistant", "quantiles"),
-                       tags = c("train", "prep")),
+          ParamFct$new("scheme",
+            default = "equidistant", levels = c("equidistant", "quantiles"),
+            tags = c("train", "prep")),
           ParamDbl$new("cut_min", default = 0, lower = 0, tags = c("train", "prep")),
           ParamUty$new("custom_net", tags = c("train", "net")),
           ParamUty$new("num_nodes", tags = c("train", "net")),
           ParamLgl$new("batch_norm", default = TRUE, tags = c("train", "net")),
-          ParamDbl$new("dropout", default = "None", special_vals = list("None"),
-                       lower = 0, upper = 1, tags = c("train", "net")),
-          ParamFct$new("activation", default = "relu", levels = activations,
-                       tags = c("train", "act")),
+          ParamDbl$new("dropout",
+            default = "None", special_vals = list("None"),
+            lower = 0, upper = 1, tags = c("train", "net")),
+          ParamFct$new("activation",
+            default = "relu", levels = activations,
+            tags = c("train", "act")),
           ParamDbl$new("alpha", default = 1, lower = 0, tags = c("train", "opt")),
           ParamDbl$new("lambd", default = 0.5, lower = 0, tags = c("train", "opt")),
           ParamDbl$new("mod_alpha", default = 0.2, lower = 0, upper = 1, tags = c("train", "mod")),
           ParamDbl$new("sigma", default = 0.1, tags = c("train", "mod")),
           ParamUty$new("device", tags = c("train", "mod")),
           ParamUty$new("loss", tags = c("train", "mod")),
-          ParamFct$new("optimizer", default = "adam", levels = optimizers,
-                       tags = c("train", "opt")),
+          ParamFct$new("optimizer",
+            default = "adam", levels = optimizers,
+            tags = c("train", "opt")),
           ParamDbl$new("rho", default = 0.9, tags = c("train", "opt")),
           ParamDbl$new("eps", default = 1e-8, tags = c("train", "opt")),
           ParamDbl$new("lr", default = 1, tags = c("train", "opt")),
@@ -73,8 +78,9 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
           ParamLgl$new("nesterov", default = FALSE, tags = c("train", "opt")),
           ParamLgl$new("lr_finder", default = FALSE, tags = c("train", "lrf")),
           ParamInt$new("batch_size", default = 256, tags = c("train", "lrf", "fit", "predict")),
-          ParamDbl$new("tolerance", lower = 0, upper = Inf, default = Inf,
-                       tags = c("train", "lrf")),
+          ParamDbl$new("tolerance",
+            lower = 0, upper = Inf, default = Inf,
+            tags = c("train", "lrf")),
           ParamInt$new("epochs", lower = 1, upper = Inf, default = 1, tags = c("train", "fit")),
           ParamLgl$new("verbose", default = TRUE, tags = c("train", "fit")),
           ParamInt$new("num_workers", default = 0L, tags = c("train", "fit", "predict")),
@@ -85,16 +91,18 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
           ParamInt$new("patience", default = 10, tags = c("train", "early")),
           ParamLgl$new("interpolate", default = FALSE, tags = "predict"),
           ParamInt$new("sub", default = 10, lower = 1, tags = c("inter", "predict")),
-          ParamFct$new("interpolate_scheme", default = "const_pdf",
-                       levels = c("const_hazard", "const_pdf"), tags = c("inter", "predict"))
+          ParamFct$new("interpolate_scheme",
+            default = "const_pdf",
+            levels = c("const_hazard", "const_pdf"), tags = c("inter", "predict"))
         )
       )
 
       ps$add_dep("rho", "optimizer", CondEqual$new("adadelta"))
       ps$add_dep("eps", "optimizer", CondAnyOf$new(setdiff(optimizers, c("asgd", "rprop", "sgd"))))
       ps$add_dep("lr", "optimizer", CondEqual$new("adadelta"))
-      ps$add_dep("weight_decay", "optimizer",
-                 CondAnyOf$new(setdiff(optimizers, c("rprop", "sparse_adam"))))
+      ps$add_dep(
+        "weight_decay", "optimizer",
+        CondAnyOf$new(setdiff(optimizers, c("rprop", "sparse_adam"))))
       ps$add_dep("learning_rate", "optimizer", CondAnyOf$new(setdiff(optimizers, "adadelta")))
       ps$add_dep("lr_decay", "optimizer", CondEqual$new("adadelta"))
       ps$add_dep("betas", "optimizer", CondAnyOf$new(c("adam", "adamax", "adamw", "sparse_adam")))
@@ -126,10 +134,10 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
   ),
 
   private = list(
-
     .train = function(task) {
 
       # Prepare data and optionally standardise outcome
+
       pars = self$param_set$get_values(tags = "prep")
       data = mlr3misc::invoke(
         prepare_train_data,
@@ -151,8 +159,8 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
           in_features = x_train$shape[1],
           num_nodes = reticulate::r_to_py(as.integer(pars$num_nodes)),
           activation = mlr3misc::invoke(get_activation,
-                                        construct = FALSE,
-                                        .args = self$param_set$get_values(tags = "act")),
+            construct = FALSE,
+            .args = self$param_set$get_values(tags = "act")),
           out_features = data$labtrans$out_features,
           .args = pars[names(pars) %nin% "num_nodes"]
         )
@@ -168,8 +176,8 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
         net = net,
         duration_index = data$labtrans$cuts,
         optimizer = mlr3misc::invoke(get_optim,
-                                     net = net,
-                                     .args = self$param_set$get_values(tags = "opt")),
+          net = net,
+          .args = self$param_set$get_values(tags = "opt")),
         .args = pars
       )
 
@@ -195,7 +203,7 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
       } else if (early_stopping) {
         callbacks = reticulate::r_to_py(list(
           mlr3misc::invoke(torchtuples$callbacks$EarlyStopping,
-                           .args = self$param_set$get_values(tags = "early"))
+            .args = self$param_set$get_values(tags = "early"))
         ))
       } else {
         callbacks = NULL
@@ -210,12 +218,13 @@ LearnerSurvDeephit = R6::R6Class("LearnerSurvDeephit",
         callbacks = callbacks,
         val_data = data$val,
         .args = pars
-        )
+      )
     },
 
     .predict = function(task) {
 
       # get test data
+
       x_test = task$data(cols = task$feature_names)
       x_test = reticulate::r_to_py(x_test)$values$astype("float32")
 

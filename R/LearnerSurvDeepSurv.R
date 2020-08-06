@@ -27,21 +27,25 @@ LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     initialize = function() {
+
       ps = ParamSet$new(
         params = list(
           ParamDbl$new("frac", default = 0, lower = 0, upper = 1, tags = c("train", "prep")),
           ParamUty$new("num_nodes", tags = c("train", "net", "required")),
           ParamLgl$new("batch_norm", default = TRUE, tags = c("train", "net")),
-          ParamDbl$new("dropout", default = "None", special_vals = list("None"),
-                       lower = 0, upper = 1, tags = c("train", "net")),
-          ParamFct$new("activation", default = "relu", levels = activations,
-                       tags = c("train", "act")),
+          ParamDbl$new("dropout",
+            default = "None", special_vals = list("None"),
+            lower = 0, upper = 1, tags = c("train", "net")),
+          ParamFct$new("activation",
+            default = "relu", levels = activations,
+            tags = c("train", "act")),
           ParamDbl$new("alpha", default = 1, lower = 0, tags = c("train", "opt")),
           ParamDbl$new("lambd", default = 0.5, lower = 0, tags = c("train", "opt")),
           ParamUty$new("device", tags = c("train", "mod")),
           ParamUty$new("loss", tags = c("train", "mod")),
-          ParamFct$new("optimizer", default = "adam", levels = optimizers,
-                       tags = c("train", "opt")),
+          ParamFct$new("optimizer",
+            default = "adam", levels = optimizers,
+            tags = c("train", "opt")),
           ParamDbl$new("rho", default = 0.9, tags = c("train", "opt")),
           ParamDbl$new("eps", default = 1e-8, tags = c("train", "opt")),
           ParamDbl$new("lr", default = 1, tags = c("train", "opt")),
@@ -59,8 +63,9 @@ LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
           ParamLgl$new("nesterov", default = FALSE, tags = c("train", "opt")),
           ParamLgl$new("lr_finder", default = FALSE, tags = c("train", "lrf")),
           ParamInt$new("batch_size", default = 256, tags = c("train", "lrf", "fit", "predict")),
-          ParamDbl$new("tolerance", lower = 0, upper = Inf, default = Inf,
-                       tags = c("train", "lrf")),
+          ParamDbl$new("tolerance",
+            lower = 0, upper = Inf, default = Inf,
+            tags = c("train", "lrf")),
           ParamInt$new("epochs", lower = 1, upper = Inf, default = 1, tags = c("train", "fit")),
           ParamLgl$new("verbose", default = TRUE, tags = c("train", "fit")),
           ParamInt$new("num_workers", default = 0L, tags = c("train", "fit", "predict")),
@@ -75,8 +80,9 @@ LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
       ps$add_dep("rho", "optimizer", CondEqual$new("adadelta"))
       ps$add_dep("eps", "optimizer", CondAnyOf$new(setdiff(optimizers, c("asgd", "rprop", "sgd"))))
       ps$add_dep("lr", "optimizer", CondEqual$new("adadelta"))
-      ps$add_dep("weight_decay", "optimizer",
-                 CondAnyOf$new(setdiff(optimizers, c("rprop", "sparse_adam"))))
+      ps$add_dep(
+        "weight_decay", "optimizer",
+        CondAnyOf$new(setdiff(optimizers, c("rprop", "sparse_adam"))))
       ps$add_dep("learning_rate", "optimizer", CondAnyOf$new(setdiff(optimizers, "adadelta")))
       ps$add_dep("lr_decay", "optimizer", CondEqual$new("adadelta"))
       ps$add_dep("betas", "optimizer", CondAnyOf$new(c("adam", "adamax", "adamw", "sparse_adam")))
@@ -105,10 +111,10 @@ LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
   ),
 
   private = list(
-
     .train = function(task) {
 
       # Prepare data and optionally standardise outcome
+
       pars = self$param_set$get_values(tags = "prep")
       data = mlr3misc::invoke(
         prepare_train_data,
@@ -126,8 +132,8 @@ LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
         num_nodes = reticulate::r_to_py(as.integer(pars$num_nodes)),
         out_features = 1L,
         activation = mlr3misc::invoke(get_activation,
-                                      construct = FALSE,
-                                      .args = self$param_set$get_values(tags = "act")),
+          construct = FALSE,
+          .args = self$param_set$get_values(tags = "act")),
         output_bias = FALSE,
         .args = pars[names(pars) %nin% "num_nodes"]
       )
@@ -138,8 +144,8 @@ LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
         pycox$models$CoxPH,
         net = net,
         optimizer = mlr3misc::invoke(get_optim,
-                                     net = net,
-                                     .args = self$param_set$get_values(tags = "opt")),
+          net = net,
+          .args = self$param_set$get_values(tags = "opt")),
         .args = pars
       )
 
@@ -165,7 +171,7 @@ LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
       } else if (early_stopping) {
         callbacks = reticulate::r_to_py(list(
           mlr3misc::invoke(torchtuples$callbacks$EarlyStopping,
-                           .args = self$param_set$get_values(tags = "early"))
+            .args = self$param_set$get_values(tags = "early"))
         ))
       } else {
         callbacks = NULL
@@ -186,6 +192,7 @@ LearnerSurvDeepsurv = R6::R6Class("LearnerSurvDeepsurv",
     .predict = function(task) {
 
       # compute baselines
+
       self$model$model$compute_baseline_hazards()
 
       # get test data

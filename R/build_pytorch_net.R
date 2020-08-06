@@ -29,16 +29,18 @@
 #' @examples
 #' build_pytorch_net(10, 1)
 #'
-#' build_pytorch_net(n_in = 10, n_out = 1, nodes = c(4, 4, 4), activation = "elu",
-#' act_pars = list(alpha = 0.5), dropout = c(0.2, 0.1, 0.6),
-#' batch_norm = TRUE, init = "kaiming_normal", init_pars = list(non_linearity = "relu"))
-#'
+#' build_pytorch_net(
+#'   n_in = 10, n_out = 1, nodes = c(4, 4, 4), activation = "elu",
+#'   act_pars = list(alpha = 0.5), dropout = c(0.2, 0.1, 0.6),
+#'   batch_norm = TRUE, init = "kaiming_normal", init_pars = list(non_linearity = "relu"))
 #' @export
 build_pytorch_net = function(n_in, n_out,
-                             nodes = c(32, 32), activation = "relu",
-                             act_pars = list(),  dropout = 0.1,
-                             bias = TRUE, batch_norm = TRUE, batch_pars = list(eps = 1e-5,
-                             momentum = 0.1, affine = TRUE), init = "uniform", init_pars = list()) {
+  nodes = c(32, 32), activation = "relu",
+  act_pars = list(), dropout = 0.1,
+  bias = TRUE, batch_norm = TRUE, batch_pars = list(
+    eps = 1e-5,
+    momentum = 0.1, affine = TRUE), init = "uniform", init_pars = list()) {
+
   nodes = as.integer(nodes)
   n_in = as.integer(n_in)
   n_out = as.integer(n_out)
@@ -48,16 +50,16 @@ build_pytorch_net = function(n_in, n_out,
   if (length(activation) == 1) {
     checkmate::assert_character(activation)
     activation = rep(list(mlr3misc::invoke(get_activation,
-                                           activation = activation,
-                                           construct = TRUE,
-                                           .args = act_pars)), lng)
+      activation = activation,
+      construct = TRUE,
+      .args = act_pars)), lng)
   } else {
     checkmate::assert_character(activation, len = lng)
     activation = lapply(activation, function(x) {
       mlr3misc::invoke(get_activation,
-                       activation = x,
-                       construct = TRUE,
-                       .args = act_pars)
+        activation = x,
+        construct = TRUE,
+        .args = act_pars)
     })
   }
 
@@ -70,14 +72,15 @@ build_pytorch_net = function(n_in, n_out,
 
   add_module = function(net, id, num_in, num_out, act, dropout) {
     # linear trafo
+
     net$add_module(paste0("L", id), nn$Linear(num_in, num_out, bias))
     # activation
     net$add_module(paste0("A", id), act)
     # batch normalisation
     if (batch_norm) {
       net$add_module(paste0("BN", id), mlr3misc::invoke(nn$BatchNorm1d,
-                                                      num_features = num_out,
-                                                      .args = batch_pars))
+        num_features = num_out,
+        .args = batch_pars))
     }
     # dropout layer
     if (!is.null(dropout)) {
@@ -103,10 +106,11 @@ build_pytorch_net = function(n_in, n_out,
 
   init = mlr3misc::invoke(get_init, init = init, .args = init_pars)
   reticulate::py_run_string(
-    paste0("import torch
+    paste0(
+      "import torch
 def init_weights(m):
       if type(m) == torch.nn.Linear:",
-        init))
+      init))
   net$apply(reticulate::py$init_weights)
 
   return(net)

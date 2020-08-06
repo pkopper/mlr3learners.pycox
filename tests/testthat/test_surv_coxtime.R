@@ -26,8 +26,9 @@ test_that("optimiser", {
 })
 
 test_that("learning rate", {
-  learner = lrn("surv.coxtime", optimizer = "adam", eps = 1e-3, num_nodes = c(2, 2),
-                lr_finder = TRUE)
+  learner = lrn("surv.coxtime",
+    optimizer = "adam", eps = 1e-3, num_nodes = c(2, 2),
+    lr_finder = TRUE)
   expect_silent(learner$train(task))
   expect_prediction_surv(learner$predict(task))
 })
