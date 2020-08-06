@@ -107,7 +107,6 @@ build_pytorch_net = function(n_in, n_out,
 def init_weights(m):
       if type(m) == torch.nn.Linear:",
         init))
-
   net$apply(reticulate::py$init_weights)
 
   return(net)
