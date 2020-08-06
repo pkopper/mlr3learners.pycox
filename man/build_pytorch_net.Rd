@@ -57,7 +57,7 @@ initialization with optional dropout and batch normalization.
 \details{
 This function is a helper for R users with less Python experience. Currently it is
 limited to simple MLPs. More advanced networks will require manual creation with
-\CRANpkg{reticulate.}
+\CRANpkg{reticulate}.
 }
 \examples{
 build_pytorch_net(10, 1)

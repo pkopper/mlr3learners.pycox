@@ -26,6 +26,7 @@
 #' `reticulate::py_help(pycox$models$LogisticHazard$label_transform)`.
 #' @param model `(character(1))`\cr Corresponding pycox model, one of `"DeepHit"`, `"LH"`, `"PCH"`,
 #' and `"CoxTime"`.
+#' @export
 prepare_train_data = function(task, frac = 0, standardize_time = FALSE, log_duration = FALSE,
                               with_mean = TRUE, with_std = TRUE, discretise = FALSE, cuts = 10L,
                               cutpoints = NULL, scheme = c("equidistant", "quantiles"),

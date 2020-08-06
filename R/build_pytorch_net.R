@@ -3,7 +3,7 @@
 #' initialization with optional dropout and batch normalization.
 #' @details This function is a helper for R users with less Python experience. Currently it is
 #' limited to simple MLPs. More advanced networks will require manual creation with
-#' \CRANpkg{reticulate.}
+#' \CRANpkg{reticulate}.
 #'
 #' @param n_in `(integer(1))`\cr Number of input features.
 #' @param n_out `(integer(1))`\cr Number of targets.
@@ -68,15 +68,15 @@ build_pytorch_net = function(n_in, n_out,
     checkmate::assert_numeric(dropout, len = lng)
   }
 
-  add_module = function(net, id, n_int, n_out, act, dropout) {
+  add_module = function(net, id, num_in, num_out, act, dropout) {
     # linear trafo
-    net$add_module(paste0("L", id), nn$Linear(n_int, n_out, bias))
+    net$add_module(paste0("L", id), nn$Linear(num_in, num_out, bias))
     # activation
     net$add_module(paste0("A", id), act)
     # batch normalisation
     if (batch_norm) {
       net$add_module(paste0("BN", id), mlr3misc::invoke(nn$BatchNorm1d,
-                                                      num_features = n_out,
+                                                      num_features = num_out,
                                                       .args = batch_pars))
     }
     # dropout layer

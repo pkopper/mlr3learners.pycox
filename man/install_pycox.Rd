@@ -12,7 +12,7 @@ install_pycox(
 )
 }
 \arguments{
-\item{method, conda, pip}{See \link[reticulate:py_install]{reticulate::py_install}}
+\item{method, conda, pip}{See \link[reticulate:py_install]{reticulate::py_install}.}
 
 \item{install_torch}{If \code{TRUE} installs the dependency \code{torch} package as well.}
 }

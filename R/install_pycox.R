@@ -1,6 +1,6 @@
 #' @title Install Pycox With Reticulate
 #' @description Installs the python 'pycox' package via reticulate.
-#' @param method,conda,pip See [reticulate::py_install]
+#' @param method,conda,pip See [reticulate::py_install].
 #' @param install_torch If `TRUE` installs the dependency `torch` package as well.
 #' @export
 install_pycox <- function(method = "auto", conda = "auto", pip = FALSE, install_torch = FALSE) {
