@@ -100,6 +100,10 @@ jobs:
         run: |
           Rscript -e "remotes::install_github('rstudio/reticulate')"
           Rscript -e "reticulate::install_miniconda()"
+          
+      - name: Install Pycox and Torch
+        run: |
+          Rscript -e "reticulate::py_install(c('torch', 'pycox'))"
 
       - name: "[Stage] Script"
         run: Rscript -e 'tic::script()'
