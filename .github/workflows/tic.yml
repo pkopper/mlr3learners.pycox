@@ -122,7 +122,7 @@ jobs:
           Rscript -e "reticulate::install_miniconda()"
       - name: Install Pycox and Torch
         run: |
-          Rscript -e "reticulate::py_install(c("torch", "pycox"), pip = TRUE)"
+          Rscript -e "reticulate::py_install(c('torch', 'pycox'), pip = TRUE)"
 
       - name: "[Stage] Script"
         run: Rscript -e 'tic::script()'
