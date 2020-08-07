@@ -129,8 +129,9 @@ jobs:
       - name: Install Pycox and Torch Windows
         if: runner.os == 'Windows'
         run: |
-          Rscript -e "reticulate::py_install(c('pycox'), pip = TRUE)"
+          python -m pip install --upgrade pip
           pip install torch===1.6.0 -f https://download.pytorch.org/whl/torch_stable.html
+          pip install pycox
 
       - name: "[Stage] Script"
         run: Rscript -e 'tic::script()'
