@@ -260,8 +260,8 @@ LearnerSurvLogisticHazard = R6::R6Class("LearnerSurvLogisticHazard",
         # fix for rounding errors
         x[[i]]$pdf = round(1 - surv[, i], 6)
         x[[i]]$pdf = c(x[[i]]$pdf[1], diff(x[[i]]$pdf))
-        x[[i]]$pdf[x[[i]]$pdf < 0.000001] = 0L
-        x[[i]]$pdf[x[[i]]$pdf > 0.999999] = 1L
+        x[[i]]$pdf[x[[i]]$pdf < 0.001] = 0L
+        x[[i]]$pdf[x[[i]]$pdf > 0.999] = 1L
       }
 
       distr = distr6::VectorDistribution$new(
