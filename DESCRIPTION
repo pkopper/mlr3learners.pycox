@@ -21,7 +21,9 @@ Imports:
 Suggests:
     checkmate,
     distr6,
+    pracma,
     rmarkdown,
+    simsurv,
     testthat
 Remotes:
     mlr-org/mlr3,
