@@ -120,9 +120,17 @@ jobs:
         run: |
           Rscript -e "remotes::install_github('rstudio/reticulate')"
           Rscript -e "reticulate::install_miniconda()"
-      - name: Install Pycox and Torch
+          
+      - name: Install Pycox and Torch Mac/Linux
+        if: runner.os != 'Windows'
         run: |
           Rscript -e "reticulate::py_install(c('torch', 'pycox'), pip = TRUE)"
+      
+      - name: Install Pycox and Torch Windows
+        if: runner.os == 'Windows'
+        run: |
+          pip install torch===1.6.0 torchvision===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+          Rscript -e "reticulate::py_install(c('pycox'), pip = TRUE)"
 
       - name: "[Stage] Script"
         run: Rscript -e 'tic::script()'
