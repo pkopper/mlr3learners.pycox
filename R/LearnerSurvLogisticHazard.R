@@ -255,12 +255,13 @@ LearnerSurvLogisticHazard = R6::R6Class("LearnerSurvLogisticHazard",
       }
 
       # cast to distr6
-      x = rep(list(list(x = round(as.numeric(rownames(surv)), 5), cdf = 0)), task$nrow)
+      x = rep(list(list(x = round(as.numeric(rownames(surv)), 5), pdf = 0)), task$nrow)
       for (i in seq_len(task$nrow)) {
-        x[[i]]$cdf = 1 - surv[, i]
-        x[[i]]$cdf[x[[i]]$cdf > 1] = 1
-        x[[i]]$cdf[x[[i]]$cdf < 0] = 0
-        x[[i]]$cdf = round(x[[i]]$cdf, 5)
+        # fix for rounding errors
+        x[[i]]$pdf = round(1 - surv[, i], 6)
+        x[[i]]$pdf = c(x[[i]]$pdf[1], diff(x[[i]]$pdf))
+        x[[i]]$pdf[x[[i]]$pdf < 0.000001] = 0L
+        x[[i]]$pdf[x[[i]]$pdf > 0.999999] = 1L
       }
 
       distr = distr6::VectorDistribution$new(

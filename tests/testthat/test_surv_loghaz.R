@@ -8,7 +8,7 @@ test_that("autotest", {
 test_that("custom net", {
   net = build_pytorch_net(3L, 10L, nodes = c(2, 4, 8, 32), activation = "elu")
   learner = lrn("surv.loghaz", custom_net = net)
-  task = tgen("simsurv")$generate(50)
+  task = tgen("simsurv")$generate(30)
   expect_silent(learner$train(task))
   expect_prediction_surv(learner$predict(task))
   expect_equal(learner$model$model$net, net)
