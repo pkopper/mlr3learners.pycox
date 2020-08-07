@@ -129,9 +129,9 @@ jobs:
       - name: Install Pycox and Torch Windows
         if: runner.os == 'Windows'
         run: |
-          python -m pip install --upgrade pip
-          pip install torch===1.6.0 -f https://download.pytorch.org/whl/torch_stable.html
-          pip install pycox
+          pip3 install --upgrade pip
+          pip3 install torch===1.6.0 -f https://download.pytorch.org/whl/torch_stable.html
+          pip3 install pycox
 
       - name: "[Stage] Script"
         run: Rscript -e 'tic::script()'
