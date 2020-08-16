@@ -1,6 +1,6 @@
 Package: mlr3learners.pycox
 Title: Adds Learners from Python Package pycox for mlr3
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R:
     person(given = "Raphael",
            family = "Sonabend",
